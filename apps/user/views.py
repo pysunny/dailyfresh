@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.core.mail import send_mail
 from user.models import User, Address
+from goods.models import GoodsSKU
 from celery_tasks.tasks import send_register_email
 from django.views.generic import View
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from utils.mixin import LoginRequiredMixin
+from django_redis import get_redis_connection
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired
 import re
 
@@ -66,6 +68,7 @@ class RegistreView(View):
         # 返回应答
         return redirect(reverse('user:login'))
 
+# /user/active
 class ActiveView(View):
     """ 用户激活 """
     def get(self, request, token):
@@ -85,6 +88,7 @@ class ActiveView(View):
         except SignatureExpired as e:
             return HttpResponse('激活邮件已经过期')
 
+# /user/login
 class LoginView(View):
     def get(self, request):
         """ 显示页面 """
@@ -131,11 +135,27 @@ class UserInfoView(LoginRequiredMixin, View):
     """ 用户信息 """
     def get(self, request):
         # 获取用户的个人信息
+        user = request.user
+        address = Address.objects.get_default_address(user)
 
         # 获取用户的浏览记录
+        con = get_redis_connection('default')
+        history_key = 'history_%d'%user.id
+        # 获取浏览记录
+        sku_ids = con.lrange(history_key, 0 , 4)
+        # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
 
-        return render(request, 'user_center_info.html', {'page':'user'})
+        goods_li = []
+        for id in sku_ids:
+            goods = GoodsSKU.objects.get(id=id)
+            goods_li.append(goods)
 
+        context = {'page':'user',
+                    'address':address,
+                    'goods_li':goods_li}
+
+
+        return render(request, 'user_center_info.html', context)
 
 # /user/logout
 class LogoutView(View):
@@ -144,7 +164,6 @@ class LogoutView(View):
         logout(request)
         return redirect(reverse('goods:index'))
 
-
 # /user/order
 class UserOrderView(LoginRequiredMixin, View):
     """ 用户订单 """
@@ -152,6 +171,7 @@ class UserOrderView(LoginRequiredMixin, View):
         # 获取用户的订单信息
         return render(request, 'user_center_order.html', {'page':'order'})
 # /user/address
+
 class AddressView(LoginRequiredMixin, View):
     """ 用户地址 """
     def get(self, request):
