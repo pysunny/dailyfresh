@@ -126,11 +126,10 @@ linux基本常用命令如下
     chmod       改变文件或目录的访问权限 #给文件拥有者增加test.sh的执行权限：chmod u+x  test.sh #给文件拥有者增加test目录及其下所有文件的执行权限：chmod u+x -R test
     tar  +  vf  压缩和解压缩#打包test目录为test.tar.gz文件，-z表示用gzip压缩：tar -zcvf test.tar.gz  ./test#解压test.tar.gz文件：tar  -zxvf test.tar.gz
     vim	        文本编辑
-        #vim三种模式：命令模式、插入模式、编辑模式。
-        使用ESC或i或：来切换模式
-        #命令模式下，
-        :q退出  :q!强制退出  :wq保存退出 
+        :q      退出  
+        :q!     强制退出 
+        :wq     保存退出 
         :set number显示行号
-        /java 在文档中查找java
-        yy复制  p粘贴
-        #编辑desc.txt文件：vim desc.txt
+        /java   在文档中查找java
+        yy:     复制 
+        p:      粘贴
