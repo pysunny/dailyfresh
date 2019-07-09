@@ -72,7 +72,7 @@ select * from df_user;
 
 
 redis 启动:
-sudo redis-server /etc/redis/redis.conf
+redis-server /etc/redis/redis.conf
 
 Git基本常用命令如下：
     git init                        把当前的目录变成可以管理的git仓库，生成隐藏.git文件。
