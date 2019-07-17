@@ -1,7 +1,6 @@
+0.修改中文
 dpkg-reconfigure locales
 vi /etc/default/locale
-
-
 reboot
 
 1.配置VI
@@ -73,14 +72,8 @@ apt-get install mysql-server
 service mysql start
 ps ajx|grep mysql
 
-$ sudo mysql -u root # I had to use “sudo” since is new installation
-mysql> USE mysql;
-mysql> UPDATE user SET plugin=‘mysql_native_password’ WHERE User=‘root’;
-mysql> FLUSH PRIVILEGES;
-mysql> exit;
+service mysql restart
 
-$ service mysql restart
-ex
 6.安装 REDIS:
 
 wget http://download.redis.io/releases/redis-3.2.8.tar.gz
@@ -115,7 +108,7 @@ pip install virtualenv
 pip install virtualenvwrapper
 mkdir ~/.virtualenvs
 vim ~/.bashrc
-export WORKON_HOME=$HOME/.virtualenvs  # 所有虚拟环境存储的目录
+export WORKON_HOME=$HOME/.virtualenvs  
 source /usr/local/bin/virtualenvwrapper.sh
 source ~/.bashrc
 mkvirtualenv env_name
