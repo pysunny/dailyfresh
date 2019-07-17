@@ -1,6 +1,5 @@
 ﻿
 cd /home/share/dailyfresh && workon dailyfresh
-cd /home/share/dailyfresh && workon dailyfresh && sudo redis-server /etc/redis/redis.conf && screen ./celery.sh
 cd /home/share/dailyfresh && workon dailyfresh && redis-server /etc/redis/redis.conf && screen ./celery.sh
 cd /home/share/dailyfresh && workon dailyfresh && screen ./run.sh
 cd /home/share/dailyfresh && workon dailyfresh && screen ./runh.sh

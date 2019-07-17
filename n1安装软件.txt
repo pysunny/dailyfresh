@@ -1,0 +1,148 @@
+dpkg-reconfigure locales
+vi /etc/default/locale
+
+
+reboot
+
+1.配置VI
+cd ~
+touch .vimrc
+vim .vimrc
+
+"去掉vi的一致性"
+set nocompatible
+"显示行号"
+set number
+" 隐藏滚动条"    
+set guioptions-=r 
+set guioptions-=L
+set guioptions-=b
+"隐藏顶部标签栏"
+set showtabline=0
+"设置字体"
+set guifont=Monaco:h13         
+syntax on   "开启语法高亮"
+let g:solarized_termcolors=256  "solarized主题设置在终端下的设置"
+set background=dark     "设置背景色"
+set nowrap  "设置不折行"
+set fileformat=unix "设置以unix的格式保存文件"
+set cindent     "设置C样式的缩进格式"
+set tabstop=4   "设置table长度"
+set shiftwidth=4        "同上"
+set showmatch   "显示匹配的括号"
+set scrolloff=5     "距离顶部和底部5行"
+set laststatus=2    "命令行为两行"
+set fenc=utf-8      "文件编码"
+set backspace=2
+set mouse=a     "启用鼠标"
+set selection=exclusive
+set selectmode=mouse,key
+set matchtime=5
+set ignorecase      "忽略大小写"
+set incsearch
+set hlsearch        "高亮搜索项"
+set noexpandtab     "不允许扩展table"
+set whichwrap+=<,>,h,l
+set autoread
+set cursorline      "突出显示当前行"
+set cursorcolumn        "突出显示当前列"
+
+2.修改源
+cd /etc/apt
+cp sources.list sources.list.bak
+vim sources.list
+
+deb https://mirrors.ustc.edu.cn/debian stretch main contrib non-free
+#deb-src http://httpredir.debian.org/debian stretch main contrib non-free
+deb https://mirrors.ustc.edu.cn/debian stretch-updates main contrib non-free
+#deb-src http://httpredir.debian.org/debian stretch-updates main contrib non-free
+deb https://mirrors.ustc.edu.cn/debian stretch-backports main contrib non-free
+#deb-src http://httpredir.debian.org/debian stretch-backports main contrib non-free
+deb https://mirrors.ustc.edu.cn/debian-security/ stretch/updates main contrib non-free
+#deb-src http://security.debian.org/ stretch/updates main contrib non-free
+
+apt update
+
+
+3.默认python3
+update-alternatives --install /usr/bin/python python /usr/bin/python3 150
+
+5.安装mysql
+
+apt-get install mysql-server
+service mysql start
+ps ajx|grep mysql
+
+$ sudo mysql -u root # I had to use “sudo” since is new installation
+mysql> USE mysql;
+mysql> UPDATE user SET plugin=‘mysql_native_password’ WHERE User=‘root’;
+mysql> FLUSH PRIVILEGES;
+mysql> exit;
+
+$ service mysql restart
+ex
+6.安装 REDIS:
+
+wget http://download.redis.io/releases/redis-3.2.8.tar.gz
+tar -zxvf redis-3.2.8.tar.gz
+mv ./redis-3.2.8 /usr/local/redis/
+cd /usr/local/redis/
+
+make MALLOC=libc
+ARCH="-fasm"
+cd deps
+make geohash-int hiredis jemalloc linenoise lua
+cd ..
+make install
+cp /usr/local/redis/redis.conf /etc/redis/
+vi /etc/redis/redis.conf
+
+daemonize yes
+dir /var/lib/redis
+logfile /var/log/redis/redis-server.log
+
+mkdir redis
+redis-server /etc/redis/redis.conf 
+
+4.安装pip
+
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # 下载安装脚本
+python get-pip.py    # 运行安装脚本
+
+7.安装虚拟环境
+
+pip install virtualenv
+pip install virtualenvwrapper
+mkdir ~/.virtualenvs
+vim ~/.bashrc
+export WORKON_HOME=$HOME/.virtualenvs  # 所有虚拟环境存储的目录
+source /usr/local/bin/virtualenvwrapper.sh
+source ~/.bashrc
+mkvirtualenv env_name
+
+8.安装 pillow
+
+apt-get install python3-dev python3-setuptools libtiff5-dev zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev  tcl8.6-dev tk8.6-dev python3-tk
+
+
+9.安装samba
+apt-get install samba samba-common
+mkdir /home/share
+chmod 777 /home/share
+smbpasswd -a root
+vi /etc/samba/smb.conf
+
+[share]
+comment = share folder
+browseable = yes
+path = /home/share
+create mask = 0700
+directory mask = 0700
+valid users = root
+force user = root
+force group = root
+public = yes 
+available = yes 
+writable = yes
+
+service smbd restart
