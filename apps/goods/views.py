@@ -64,10 +64,40 @@ class DetailView(View):
             # 商品不存在
             return redirect(reverse('goods:index'))
 
-        获取商品的种类信息
+        # 获取商品的种类信息
         types = GoodsType.objects.all()
 
-        获取商品评论信息
+        # 获取商品评论信息
         sku_orders = OrderGoods.objects.filter(sku=sku).exclude(comment='')
 
-        return render(request, 'detail.html')
+        # 获取新品
+        New_skus = GoodsSKU.objects.filter(type=sku.type).order_by('-create_time')[:2]
+
+        # 获取相同spu的商品
+        same_spu_skus= GoodsSKU.objects.filter(goods=sku.goods).exclude(id=goods_id)
+
+
+        user = request.user
+        cart_count = 0
+        if user.is_authenticated:
+            conn = get_redis_connection('default')
+            cart_key = 'cart_%d'%user.id
+            cart_count = conn.hlen(cart_key)
+
+            # 添加历史浏览记录
+            conn = get_redis_connection('default')
+            history_key = 'history_%d' % user.id
+            # 移除
+            conn.lrem(history_key, 0, goods_id)
+            # 插入
+            conn.lpush(history_key, goods_id)
+            # 只保存5条
+            conn.ltrim(history_key, 0 ,4)
+
+        context ={  'sku':sku, 'types':types,
+                    'sku_orders':sku_orders,
+                    'New_skus':New_skus,
+                    'same_spu_skus':same_spu_skus,
+                    'cart_count':cart_count}
+        # 使用模板
+        return render(request, 'detail.html' ,context)
