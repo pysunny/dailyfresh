@@ -1,13 +1,14 @@
 from django.shortcuts import render ,redirect, reverse
 from django.views.generic import View
 from django.core.cache import cache
+from django.core.paginator import Paginator
 from goods.models import GoodsType, IndexGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner, GoodsSKU
 from order.models import OrderGoods
 from django_redis import get_redis_connection
 # Create your views here.
 # Create your views here.
 
-# http://127.0.0.1:8000
+# /index
 class IndexView(View):
     '''首页'''
     def get(self, request):
@@ -16,7 +17,6 @@ class IndexView(View):
         # 从缓存获取数据
         context = cache.get('index_pang_data')
         if context is None:
-            print('设置缓存')
             # 没有缓存
             types = GoodsType.objects.all()
 
@@ -101,3 +101,82 @@ class DetailView(View):
                     'cart_count':cart_count}
         # 使用模板
         return render(request, 'detail.html' ,context)
+
+# id 页码 排序方式
+# /list/id/页码?sort=排列方式
+class ListView(View):
+    """ 列表页 """
+    def get(self, request, type_id, page):
+        # 获取种类信息
+        try:
+            type = GoodsType.objects.get(id=type_id)
+        except GoodsType.DoesNotExist:
+            # 种类不存在
+            return redirect(reverse('goods:index'))
+
+        # 获取商品的种类信息
+        types = GoodsType.objects.all()
+
+        # 获取排序方式：
+        # sort = default    默认排序
+        # sort = price      价钱
+        # sort = hot        销量
+        sort = request.GET.get('sort')
+        if sort == 'price':
+            skus = GoodsSKU.objects.filter(type=type).order_by('price')
+        elif sort == 'hot':
+            skus = GoodsSKU.objects.filter(type=type).order_by('-sales')
+        else:
+            sort = 'default'
+            skus = GoodsSKU.objects.filter(type=type).order_by('-id')
+
+
+        paginator = Paginator(skus, 1)
+
+        # 获取页码
+        try:
+            page = int(page)
+        except expression as e:
+            page = 1
+
+        if page > paginator.num_pages:
+            page = 1
+        
+        # 获取page的skus
+        skus_page = paginator.page(page)
+
+        # 页码控制
+        # 总页码小于5页，显示全部
+        # 当前是前3页，显示1-5
+        # 如当前页是后3页，显示后5页
+        # 其他情况，显示当前页前2，后2
+        num_pages = paginator.num_pages
+        if num_pages < 5:
+            pages = range(1, num_pages+1)
+        elif page <= 3:
+            pages = range(1, 5)
+        elif num_pages - page <= 2:
+            pages = range(num_pages-4, num_pages+1)
+        else:
+            pages = range(num_pages-2, num_pages+3)
+
+        # 获取新品
+        New_skus = GoodsSKU.objects.filter(type=type).order_by('-create_time')[:2]
+
+        user = request.user
+        cart_count = 0
+        if user.is_authenticated:
+            conn = get_redis_connection('default')
+            cart_key = 'cart_%d'%user.id
+            cart_count = conn.hlen(cart_key)
+        
+
+        # 组织上下文
+        context ={  'type':type, 'types':types,
+                    'skus_page':skus_page,
+                    'New_skus':New_skus,
+                    'cart_count':cart_count,
+                    'pages':pages,
+                    'sort':sort}
+
+        return render(request, 'list.html', context)
