@@ -1,4 +1,8 @@
 ﻿
+screen -S frpc_omv frpc -c /etc/frpc_omv.ini
+http://wujia_omv.frp1.chuantou.org/
+screen -S frpc_bt frpc -c /etc/frpc_bt.ini
+http://wujia_bt.frp1.chuantou.org/
 screen -S frpc_web frpc -c /etc/frpc_web.ini
 screen -S frpc_ssh frpc -c /etc/frpc_ssh.ini
 

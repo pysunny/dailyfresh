@@ -15,7 +15,7 @@ class IndexView(View):
         '''显示首页'''
         # 获取商品种类信息
         # 从缓存获取数据
-        context = cache.get('index_pang_data')
+        context = cache.get('index_page_data')
         if context is None:
             # 没有缓存
             types = GoodsType.objects.all()
@@ -39,7 +39,7 @@ class IndexView(View):
                         'goods_banners':goods_banners,
                         'promotion_banners':promotion_banners,}
 
-            cache.set('index_pang_data', context, 3600)
+            cache.set('index_page_data', context, 3600)
 
         # 获取购物车商品数量
         user = request.user
@@ -154,7 +154,7 @@ class ListView(View):
         if num_pages < 5:
             pages = range(1, num_pages+1)
         elif page <= 3:
-            pages = range(1, 5)
+            pages = range(1, 6)
         elif num_pages - page <= 2:
             pages = range(num_pages-4, num_pages+1)
         else:
