@@ -1,8 +1,11 @@
 ﻿
+screen -S frpc_web frpc -c /etc/frpc_web.ini
+screen -S frpc_ssh frpc -c /etc/frpc_ssh.ini
+
 cd /home/share/dailyfresh && workon dailyfresh
-cd /home/share/dailyfresh && workon dailyfresh && redis-server /etc/redis/redis.conf && screen ./celery.sh
-cd /home/share/dailyfresh && workon dailyfresh && screen ./run.sh
-cd /home/share/dailyfresh && workon dailyfresh && screen ./runh.sh
+cd /home/share/dailyfresh && workon dailyfresh && redis-server /etc/redis/redis.conf && screen -S celery_screen celery -A celery_tasks.tasks worker -l info
+cd /home/share/dailyfresh && workon dailyfresh && screen -S server_screen python manage.py runserver 192.168.1.192:8000
+cd /home/share/dailyfresh && workon dailyfresh && screen -S server_screen python manage.py runserver 192.168.31.92:8000
 
 
 创建python虚拟环境
