@@ -81,6 +81,9 @@ apt-get install python3-dev python3-setuptools libtiff5-dev zlib1g-dev libfreety
 redis 启动:
 redis-server /etc/redis/redis.conf
 
+samba 启动
+service smbd restart
+
 Git基本常用命令如下：
     git init                        把当前的目录变成可以管理的git仓库，生成隐藏.git文件。
     git add XX                      把xx文件添加到暂存区去。
