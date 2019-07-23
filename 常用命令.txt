@@ -1,15 +1,25 @@
 ﻿
-screen -S frpc_omv frpc -c /etc/frpc_omv.ini
-http://wujia_omv.frp1.chuantou.org/
-screen -S frpc_bt frpc -c /etc/frpc_bt.ini
-http://wujia_bt.frp1.chuantou.org/
-screen -S frpc_web frpc -c /etc/frpc_web.ini
-screen -S frpc_ssh frpc -c /etc/frpc_ssh.ini
+https://my.zerotier.com/network/a84ac5c10a3615f9
 
-cd /home/share/dailyfresh && workon dailyfresh && service smbd restart
+15625078784@163.com   hufcor888
+
+家虚拟IP 10.242.163.178
+
+cd /home/share/dailyfresh && workon dailyfresh 
+启动SAMBA
+service smbd restart
+
 redis-server /etc/redis/redis.conf && screen -S celery_screen celery -A celery_tasks.tasks worker -l info
+办公室ip
 screen -S server_screen python manage.py runserver 192.168.1.192:8000
+办公室虚拟IP
+screen -S server_screen python manage.py runserver 192.168.1.192:8000
+家IP
 screen -S server_screen python manage.py runserver 192.168.31.92:8000
+家虚拟IP
+screen -S server_screen python manage.py runserver 10.242.163.178:8000 
+通用(建议)
+screen -S server_screen python manage.py runserver 0.0.0.0:8000 
 
 
 创建python虚拟环境
