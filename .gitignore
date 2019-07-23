@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#搜索索引文件
+whoosh_index/
+*.toc
+*.seg
