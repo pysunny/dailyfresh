@@ -1,5 +1,5 @@
 
-from django.urls import path, re_path
+from django.urls import re_path
 from goods.views import IndexView, DetailView, ListView
 app_name = 'goods'
 urlpatterns = [

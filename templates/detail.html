@@ -37,8 +37,9 @@
 		</div>
 		<div class="total">总价：<em>16.80元</em></div>
 		<div class="operate_btn">
+			{% csrf_token %}
 			<a href="javascript:;" class="buy_btn">立即购买</a>
-			<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>				
+			<a href="javascript:;" sku_id = "{{ sku.id }}" class="add_cart" id="add_cart">加入购物车</a>				
 		</div>
 	</div>
 </div>
@@ -143,15 +144,27 @@
 
 	$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
 	$('#add_cart').click(function(){
-		$(".add_jump").stop().animate({
-			'left': $to_y+7,
-			'top': $to_x+7},
-			"fast", function() {
-				$(".add_jump").fadeOut('fast',function(){
-					$('#show_count').html(2);
+		sku_id = $(this).attr('sku_id')
+		count = $('.num_show').val()
+		csrf = $('input[name="csrfmiddlewaretoken"]').val()
+		params = {'sku_id':sku_id, 'count':count, 'csrfmiddlewaretoken':csrf}
+		// alert(sku_id + ':' + count)
+		// 发送ajex 访问/cart/add 传递参数 sku_id  count
+		$.post('/cart/add', params, function (data) {
+			if (data.res == 5) {
+				$(".add_jump").stop().animate({
+					'left': $to_y+7,
+					'top': $to_x+7},
+					"fast", function() {
+						$(".add_jump").fadeOut('fast',function(){
+							$('#show_count').html(data.total_count);
+						});
 				});
-
-		});
+			}
+			else {
+				alert(data.errmsg)
+			}
+		})
 	})
 </script>
 {% endblock bottomfiles %}

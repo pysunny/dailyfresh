@@ -3,7 +3,8 @@ https://my.zerotier.com/network/a84ac5c10a3615f9
 
 15625078784@163.com   hufcor888
 
-家虚拟IP 10.242.163.178
+家虚拟IP        10.147.20.113 
+office虚拟ip    10.147.20.166
 
 cd /home/share/dailyfresh && workon dailyfresh 
 启动SAMBA
@@ -13,11 +14,11 @@ redis-server /etc/redis/redis.conf && screen -S celery_screen celery -A celery_t
 办公室ip
 screen -S server_screen python manage.py runserver 192.168.1.192:8000
 办公室虚拟IP
-screen -S server_screen python manage.py runserver 192.168.1.192:8000
+screen -S server_screen python manage.py runserver 10.147.20.166:8000
 家IP
 screen -S server_screen python manage.py runserver 192.168.31.92:8000
 家虚拟IP
-screen -S server_screen python manage.py runserver 10.242.163.178:8000 
+screen -S server_screen python manage.py runserver 10.147.20.113:8000 
 通用(建议)
 screen -S server_screen python manage.py runserver 0.0.0.0:8000 
 

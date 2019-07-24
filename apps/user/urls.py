@@ -1,5 +1,5 @@
 
-from django.urls import path, re_path
+from django.urls import re_path
 from django.contrib.auth.decorators import login_required
 from user.views import RegistreView, ActiveView, LoginView, UserInfoView, UserOrderView, AddressView, LogoutView
 app_name = 'user'
