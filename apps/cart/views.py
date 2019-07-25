@@ -86,3 +86,47 @@ class CartInfoView(LoginRequiredMixin, View):
         
         # 使用模板
         return render(request, 'cart.html', context)
+
+# /cart/update
+class CartUpdateView(View):
+    def post(self, request):
+        """ 购物车更新 """
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({'res':0, 'errmsg':'请登录'})
+
+        sku_id = request.POST.get('sku_id')
+        count = request.POST.get('count')
+
+        # 数据校验
+        if not all([sku_id, count]):
+            return JsonResponse({'res':1, 'errmsg':'数据不完整'})
+
+        # 校验count
+        try:
+            count = int(count)
+        except expression as e:
+            return JsonResponse({'res':2, 'errmsg':'商品数目出错'})
+
+        # 校验商品是否存在
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id)
+        except GoodsSKU.DoesNotExist:
+            return JsonResponse({'res':3, 'errmsg':'商品不存在'})
+
+        # 业务
+        conn = get_redis_connection('default')
+        cart_key = 'cart_%d'%user.id
+
+        if count > sku.stock:
+            return JsonResponse({'res':4, 'errmsg':'商品库存不足'})
+
+        conn.hset(cart_key, sku_id, count)
+
+        total_count = 0
+        vals = conn.hvals(cart_key)
+        for val in vals:
+            total_count += int(val)
+
+        # 返回应答
+        return JsonResponse({'res':5, 'total_count':total_count, 'errmsg':'更新成功'})
