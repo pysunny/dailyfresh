@@ -3,6 +3,7 @@ from django.views.generic import View
 from goods.models import GoodsSKU
 from order.models import OrderInfo, OrderGoods
 from django.http import JsonResponse
+from django.db import transaction
 from user.models import Address
 from django_redis import get_redis_connection
 from utils.mixin import LoginRequiredMixin
@@ -70,6 +71,7 @@ class OrderPlaceView(LoginRequiredMixin, View):
 
 
 class OrderCommitView(View):
+    @transaction.atomic
     def post(self, request):
         """ 订单创建 """
         # 验证用户
@@ -103,44 +105,57 @@ class OrderCommitView(View):
         total_count = 0
         total_price = 0
 
-        order = OrderInfo.objects.create(order_id=order_id,
-                                        user=user,
-                                        addr=addr,
-                                        pay_method=pay_method,
-                                        total_count=total_count,
-                                        total_price=total_price,
-                                        transit_price=transit_price)
-        # todo:创建订单核心业务
-        conn = get_redis_connection('default')
-        cart_key = 'cart_%d'%user.id
-        sku_ids = sku_ids.split(',')
-        for sku_id in sku_ids:
-            try:
-                sku = GoodsSKU.objects.get(id=sku_id)
-            except GoodsSKU.DoesNotExist:
-                # 商品不存在
-                return JsonResponse({'res':4, 'errmsg':'商品不存在'})
+        # 设置事物保存点
+        save_id = transaction.savepoint()
+        try:
+            order = OrderInfo.objects.create(order_id=order_id,
+                                            user=user,
+                                            addr=addr,
+                                            pay_method=pay_method,
+                                            total_count=total_count,
+                                            total_price=total_price,
+                                            transit_price=transit_price)
+            # todo:创建订单核心业务
+            conn = get_redis_connection('default')
+            cart_key = 'cart_%d'%user.id
+            sku_ids = sku_ids.split(',')
+            for sku_id in sku_ids:
+                try:
+                    sku = GoodsSKU.objects.select_for_update().get(id=sku_id)
+                except GoodsSKU.DoesNotExist:
+                    # 商品不存在
+                    transaction.savepoint_rollback(save_id)
+                    return JsonResponse({'res':4, 'errmsg':'商品不存在'})
 
-            count = conn.hget(cart_key, sku_id)
+                count = conn.hget(cart_key, sku_id)
+                # 判断商品库存
+                if int(count) > sku.stock:
+                    transaction.savepoint_rollback(save_id)
+                    return JsonResponse({'res':6, 'errmsg':'商品库存不足'})
 
-            OrderGoods.objects.create(order=order,
-                                        sku=sku,
-                                        count=count,
-                                        price=sku.price)
+                OrderGoods.objects.create(order=order,
+                                            sku=sku,
+                                            count=count,
+                                            price=sku.price)
 
-            # todo:更新库存
-            sku.stock -= int(count)
-            sku.sales += int(count)
-            sku.save()
+                # todo:更新库存
+                sku.stock -= int(count)
+                sku.sales += int(count)
+                sku.save()
 
-            amount = sku.price*int(count)
-            total_count += int(count)
-            total_price += amount
+                amount = sku.price*int(count)
+                total_count += int(count)
+                total_price += amount
 
-        order.total_count = total_count
-        order.total_price = total_price
-        order.save()
+            order.total_count = total_count
+            order.total_price = total_price
+            order.save()
+        except expression as e:
+            transaction.savepoint_rollback(save_id)
+            return JsonResponse({'res':7, 'errmsg':'下单失败'})
 
+        # 提交事物
+        transaction.savepoint_commit(save_id)
         # 清除用户Redis记录
         conn.hdel(cart_key, *sku_ids)
 
