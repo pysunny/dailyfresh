@@ -11,6 +11,6 @@ urlpatterns = [
     re_path(r'^logout$', LogoutView.as_view(), name='logout'),# 登出
 
     re_path(r'^$', UserInfoView.as_view(), name='user'),# 用户信息
-    re_path(r'^order$', UserOrderView.as_view(), name='order'),# 用户订单
+    re_path(r'^order/(?P<page>\d+)$', UserOrderView.as_view(), name='order'),# 用户订单
     re_path(r'^address$', AddressView.as_view(), name='address'),# 用户地址
 ]

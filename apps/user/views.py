@@ -3,11 +3,13 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from user.models import User, Address
 from goods.models import GoodsSKU
+from order.models import OrderInfo, OrderGoods
 from celery_tasks.tasks import send_register_email
 from django.views.generic import View
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 from utils.mixin import LoginRequiredMixin
 from django_redis import get_redis_connection
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired
@@ -167,9 +169,62 @@ class LogoutView(View):
 # /user/order
 class UserOrderView(LoginRequiredMixin, View):
     """ 用户订单 """
-    def get(self, request):
+    def get(self, request, page):
+        user = request.user
+        # 获取全部订单信息
+        orders = OrderInfo.objects.filter(user=user)
+        # 遍历获取全部商品信息
+        for order in orders:
+            order_skus = OrderGoods.objects.filter(order_id=order.order_id)
+
+            # 遍历计算商品小计
+            for order_sku in order_skus:
+                amount = order_sku.count*order_sku.price
+                # 添加电台属性
+                order_sku.amount = amount
+
+            # 动态添加属性
+            order.status_name = OrderInfo.ORDER_STATUS[order.order_status]
+            order.order_skus = order_skus
+
+        # 分页
+        paginator = Paginator(orders, 1)
+
+        # 获取页码
+        try:
+            page = int(page)
+        except Expression as e:
+            page = 1
+
+        if page > paginator.num_pages:
+            page = 1
+        
+        # 获取page的skus
+        order_page = paginator.page(page)
+
+        # 页码控制
+        # 总页码小于5页，显示全部
+        # 当前是前3页，显示1-5
+        # 如当前页是后3页，显示后5页
+        # 其他情况，显示当前页前2，后2
+        num_pages = paginator.num_pages
+        if num_pages < 5:
+            pages = range(1, num_pages+1)
+        elif page <= 3:
+            pages = range(1, 6)
+        elif num_pages - page <= 2:
+            pages = range(num_pages-4, num_pages+1)
+        else:
+            pages = range(num_pages-2, num_pages+3)
+
+        # 组织上下文
+        context = { 'order_page':order_page,
+                    'pages':pages,
+                    'page':'order'}
+
+
         # 获取用户的订单信息
-        return render(request, 'user_center_order.html', {'page':'order'})
+        return render(request, 'user_center_order.html', context)
 # /user/address
 
 class AddressView(LoginRequiredMixin, View):
