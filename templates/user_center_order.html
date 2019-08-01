@@ -32,7 +32,7 @@
 
 		<div class="pagenation">
 			{% if order_page.has_previous %}
-			<a href="{% url 'user:order' type.id order_page.previous_page_number %}?sort={{ sort }}"><上一页</a>
+			<a href="{% url 'user:order' order_page.previous_page_number %}?sort={{ sort }}"><上一页</a>
 			{% endif %}
 			{% for pindex in pages %}
 				{% if pindex == order_page.number %}
@@ -42,7 +42,7 @@
 				{% endif %}
 			{% endfor %}
 			{% if order_page.has_next %}
-			<a href="{% url 'user:order' type.id order_page.next_page_number %}?sort={{ sort }}">下一页></a>
+			<a href="{% url 'user:order' order_page.next_page_number %}?sort={{ sort }}">下一页></a>
 			{% endif %}
 		</div>
 </div>

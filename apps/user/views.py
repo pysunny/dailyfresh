@@ -172,7 +172,7 @@ class UserOrderView(LoginRequiredMixin, View):
     def get(self, request, page):
         user = request.user
         # 获取全部订单信息
-        orders = OrderInfo.objects.filter(user=user)
+        orders = OrderInfo.objects.filter(user=user).order_by('-create_time')
         # 遍历获取全部商品信息
         for order in orders:
             order_skus = OrderGoods.objects.filter(order_id=order.order_id)
