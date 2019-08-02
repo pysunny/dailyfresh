@@ -141,10 +141,10 @@ class UserInfoView(LoginRequiredMixin, View):
         address = Address.objects.get_default_address(user)
 
         # 获取用户的浏览记录
-        con = get_redis_connection('default')
+        conn = get_redis_connection('default')
         history_key = 'history_%d'%user.id
         # 获取浏览记录
-        sku_ids = con.lrange(history_key, 0 , 4)
+        sku_ids = conn.lrange(history_key, 0 , 4)
         # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
 
         goods_li = []

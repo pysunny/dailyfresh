@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views.generic import View
-from django.http import JsonResponse
+from django.http import JsonResponse ,HttpResponse
 from goods.models import GoodsSKU
 from django_redis import get_redis_connection
 from utils.mixin import LoginRequiredMixin
@@ -8,6 +9,44 @@ from utils.mixin import LoginRequiredMixin
 # Create your views here.
 # /cart/add
 class CartAddView(View):
+    # cart/add?sku_id=sku_id
+    def get(self, request):
+        # 接收数据
+        user = request.user
+        if not user.is_authenticated:
+            return HttpResponse('请登录')
+        # 获取商品ID
+        sku_id = request.GET.get('sku_id')
+
+        # 校验商品是否存在
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id)
+        except GoodsSKU.DoesNotExist:
+            return HttpResponse('商品不存在')
+
+        # 业务添加一件到购物车
+        # 业务
+        count = 1
+
+        conn = get_redis_connection('default')
+        cart_key = 'cart_%d'%user.id
+
+        cart_count = conn.hget(cart_key, sku_id)
+        if cart_count:
+            count += int(cart_count)
+
+        # 校验商品库存
+
+        if count > sku.stock:
+            return HttpResponse('仓库不足')
+
+        conn.hset(cart_key, sku_id, count)
+
+        return redirect(reverse('cart:show'))
+        
+
+
+        
     def post(self, request):
         # 接收数据
         user = request.user

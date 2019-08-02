@@ -24,7 +24,7 @@ def send_register_email(to_email, username, token):
     message = ''
     sender = settings.EMAIL_FROM
     receiver = [to_email]
-    html_massage = '<h1>%s,欢迎你成为天天生鲜会员</h1>请点击一下链接激活你的账号<br/><a href="http://192.168.1.192:8000/user/active/%s">点击激活</a>'%(username, token)
+    html_massage = '<h1>%s,欢迎你成为天天生鲜会员</h1>请点击一下链接激活你的账号<br/><a href="http://192.168.1.192/user/active/%s">点击激活</a>'%(username, token)
     # 家里IP
     #html_massage = '<h1>%s,欢迎你成为天天生鲜会员</h1>请点击一下链接激活你的账号<br/><a href="http://192.168.31.92:8000/user/active/%s">点击激活</a>'%(username, token)
     send_mail(subject, message, sender, receiver, html_message=html_massage)

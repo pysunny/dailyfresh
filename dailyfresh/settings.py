@@ -25,9 +25,9 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 SECRET_KEY = 'c4bo$27y#e@!w#j@_*7go!bpl1=evk=c(@(!bjkvqv3j95&qul'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -132,6 +132,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] 
+# 指定
+STATIC_ROOT = '/var/www/dailyfresh/static'
 
 """ 富文本编辑 """
 TINYMCE_DEFAULT_CONFIG = {
@@ -186,3 +188,4 @@ HAYSTACK_CONNECTIONS = {
 
 #当添加、修改、删除数据时，自动生成索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+

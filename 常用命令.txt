@@ -154,3 +154,9 @@ linux基本常用命令如下
         /java   在文档中查找java
         yy:     复制 
         p:      粘贴
+
+
+/usr/sbin/nginx -s reload
+
+uwsgi --ini uwsgi.ini
+uwsgi --stop uwsgi.pid
