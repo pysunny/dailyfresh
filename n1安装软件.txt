@@ -82,6 +82,13 @@ ps ajx|grep mysql
 
 service mysql restart
 
+添加密码
+select user, plugin from mysql.user;
+update mysql.user set authentication_string=PASSWORD('888888'), plugin='mysql_native_password' where user='root';
+flush privileges;
+systemctl stop mariadb
+systemctl start mariadb
+
 6.安装 REDIS:
 
 wget http://download.redis.io/releases/redis-3.2.8.tar.gz
