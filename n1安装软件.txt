@@ -154,3 +154,10 @@ available = yes
 writable = yes
 
 service smbd restart
+
+mysql 登陆添加密码
+mysql> select user, plugin from mysql.user;
+update mysql.user set authentication_string=PASSWORD('888888'), plugin='mysql_native_password' where user='root';
+flush privileges;
+systemctl stop mariadb
+systemctl start mariadb
